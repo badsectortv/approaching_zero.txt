@@ -1,0 +1,104 @@
+[ From: http://www.computerworld.com/home/print.nsf/all/9903229872 ]
+[ ComputerWorld 3/22/99 ]
+When Good Scanners Go Bad
+
+Crackers are turning some scanning tools against the networks they 
+should protect
+
+By Ann Harrison
+03/22/99 Network scanning tools help information
+technology managers find security holes such as open ports
+or lists of running services on a host. But crackers are
+using a new generation of "stealth" scanners to plot
+attacks on the networks they were designed to protect.
+
+Stealth scanners are dangerous because they can be
+modified to fall under the threshold of audit trails and
+intrusion-detection systems, making the attempted probes
+harder to detect.
+
+"with the traditional thresholds you set up and patterns
+you look for, you are not going to be able to pick it up,"
+said Karen Evans, a senior network security official at
+the U.S. Department of Justice.
+
+One stealth scanner, a shareware tool known as Nmap
+(available at www.insecure.org/nmap), was recently
+identified by the Shadow intrusion-detection team at the
+Naval Surface Warfare Center as the likely source of
+recent highly publicized attacks on Pentagon computer
+systems.
+
+Although Nmap isn't new, the recently released Version
+2.08 gained TCP/IP fingerprinting capability, which allows
+crackers to identify almost 200 separate operating systems
+remotely and thus target their attacks. Nmap also sends
+out decoy packets of data over the network to mask the
+true source of a scan. When Department of Defense
+officials suggested that the Pentagon attacks were the
+work of overseas crackers, the Shadow team pointed to
+Nmap.
+
+Nmap probes networks by sending data packets to ports, or
+entry points to network servers, using TCP and Unreliable
+Datagram Protocol. Crackers can also use Nmap to
+automatically probe many sites on a network for
+vulnerabilities.
+
+Analysts from the Shadow team recognized Nmaps from its
+distinctive use of syn packets, which are the first
+packets sent from client to server when a TCP connection
+is opened. Nmap typically sends syn packets to a random
+range of destination ports, then sends packets to ports
+with high numbers, and finally more syn packets to a
+single port.
+                              
+Instead of scanning network ports at random, Nmap lets
+crackers launch precisely planned attacks. Nmap is
+relatively easy to use and can scan a network in seconds.
+According to John Green, a member of the Shadow team who
+participated in an online Nmap briefing this month, the
+tool brings greater sophistication to a wider number of
+crackers.
+
+"The intelligence that can be garnered using Nmap is
+extensive," Green said. "Everything that a wiley hacker
+needs to know about your system is there."
+
+Security consultants recommend running your own Nmap scans
+to find unsecured servers that can be accessed around the
+corporate firewall.
+                              
+The Shadow team has integrated Nmap into its scanning
+as has NASA's Ames Research Center at Moffett
+Field, Calif.
+
+"Right now, it's basically a suffer-along scenario," Green
+said. But Nmap lets security managers "know what the
+hackers know about you," he added.
+
+David Remnitz, managing partner at IFsec, a New York
+computer security consulting firm, said network managers
+should also adjust intrusion-detection thresholds and
+place their intrusion-detection tools on the same network
+segment as the machines they protect. Though that approach
+screens out random network traffic and highlights
+suspicious packets, Remnitz acknowledged that it may also
+generate false alarms.
+
+"If you make it too sensitive, you start tripping a lot of
+false positives, and then you become immune to false
+positives and you miss something," Evans observed.
+
+Jacob Carlson, IFsec's senior security consultant, said
+Nmap is a particular threat to Linux users because many
+developers have access to the source code and because
+security holes are rapidly disseminated. Carlson said
+proxy firewalls keep scanners from evaluating network
+architecture, and he urges the use of host-based and
+network-based intrusion-detection systems.
+                              
+"It takes constant monitoring," Evans said. "It's not one
+tool over another; it's the mind-set of the staff who
+review our systems, read information, put in proper
+patches and do proper testing."
