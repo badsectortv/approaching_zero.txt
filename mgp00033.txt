@@ -1,0 +1,17 @@
+
+Speeding Your Scans -- Firewalled Hosts
+
+Now let's try with -T4 ("Aggressive"):
+
+ # ./nmap -P0 -T4 www.insecure.org
+Starting nmap 3.15BETA3 ( www.insecure.org/nmap/ ) at 2003-03-16 12:57 PST
+Interesting ports on www.insecure.org (64.71.184.53):
+(The 1605 ports scanned but not shown below are in state: filtered)
+Port       State       Service
+22/tcp     open        ssh
+25/tcp     open        smtp
+53/tcp     open        domain
+80/tcp     open        http
+113/tcp    closed      auth
+8080/tcp   closed      http-proxy
+Nmap run completed -- 1 IP address (1 host up) scanned in 40.865 second
