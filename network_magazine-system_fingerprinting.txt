@@ -1,0 +1,233 @@
+System Fingerprinting With Nmap
+By Rik Farrow, Network Magazine
+Nov 6, 2000 (8:58 AM)
+URL: http://www.networkmagazine.com:80/article/NMG20001102S0005 
+
+When someone with half a clue decides to attack your system, he or she
+will first try to identify the operating system. Not every attack
+proceeds this way: Script kiddies probe huge address spaces looking
+for any system with a particular port open, which indicates that just
+maybe that system will be vulnerable. But for the professional
+penetration tester or hacker, identifying the operating system is an
+essential step in probing.
+
+My September 2000 column ("ICMP Stands for Trouble") discussed the use
+of Internet Control Message Protocol (ICMP) packets for probing and
+for detecting operating system types. Since that time, an interesting
+paper on the subject has been updated by its author, Ofir Arkin. The
+update includes new tricks for operating system identification (see
+Resources). However, using ICMP will not always work, as most
+firewalls will block some (or all) incoming ICMP packets. That leaves
+the classical methods as well as a newer technique known as stack
+fingerprinting.
+
+The king of stack fingerprinting programs today is Network Map, or
+nmap. The author of the nmap program, who goes by the name Fyodor, has
+written a paper on the subject, in which he discusses TCP options and
+their usefulness in identifying operating systems via stack
+fingerprinting (see Resources). This column goes deeper into TCP
+options and how they are used by TCP/IP and nmap.
+
+BANNER GRABBING
+
+The easiest way to identify an operating system is to
+contact it by using an open port. While this takes a little finessing
+(not much), most Telnet, e-mail, FTP, and Web servers will identify
+not only themselves but also the operating system on which they are
+running. This is almost too easy, although it can sometimes be
+unreliable-cagey administrators may change the login banners to
+mislead an attacker.
+
+Other classic strategies for identifying operating systems include
+port sweeps and grabbing e-mail headers. Port sweeps identify open
+ports, and, on a system that has not been hardened, this list of open
+ports is often enough to identify most operating systems. E-mail
+headers can identify mail user agents, the user's operating system,
+the mail server, and sometimes even the firewall that the mail passed
+through. (The amount of information that can be gleaned from an e-mail
+message is amazing.)
+
+ID PLEASE However, the easiest way to identify operating systems is to
+run nmap.  Nmap started off as a very functional network and port
+scanner, but in 1998 Fyodor added operating system fingerprinting
+techniques, and nmap has grown into the most feature-rich, free,
+stack-scanning tool in existence. Like many tools available on the
+Internet, this one is just as useful whether you are wearing a white
+hat or a black hat.  Looking in the fingerprints file of a recent
+version of nmap (2.53), I counted fingerprints for 465 different
+stacks, including operating systems, routers, printers, and other
+networked devices.
+
+The fingerprint file nmap-os-fingerprints provides some clues in the
+comments at the head of the file. There are nine tests, each with
+subparts, for identifying an operating system, although the order
+presented is a bit misleading. For a deeper look, you can try reading
+the source for the operating system fingerprinting module yourself,
+osscan.c, as well as running nmap --O and monitoring your network, so
+that you can see what it is doing. Besides getting a better
+understanding of nmap, this exercise will help you recognize it on
+your network and potentially give you ideas about how to block its
+actions.
+
+PEEKING ON NMAP 
+For example, suppose you build nmap and run it against
+a known target while you capture the packets it outputs, as in nmap
+-p20-23 -O target.  The -p20-23 limits the number of ports scanned (be
+sure you include an open port in this range), and the -O enables the
+operating system identification feature. Nmap (after a DNS lookup, if
+required) goes through four phases: Ping, port scan, characteristics
+collection, and sequence number analysis.
+
+Nmap begins with two tests: It first sends an ICMP Echo Request, or
+Ping, and then probes port 80 (the Web server port), just to see if
+the target is alive. These initial probes can be disabled or modified
+with nmap options, so they are not very reliable indicators of an
+active nmap scan.
+
+Next, nmap will scan for open and closed ports in the port 20-to-port
+23 range. The target system in this example had port 23 (Telnet) open,
+which is important for the next phase of scanning. Once nmap has
+identified one open and one closed port, it can begin the actual
+operating system identification portion of its agenda. Nmap will send
+seven carefully crafted TCP packets to the target-four to the open
+port and three to a closed port-and then sniff the responses as they
+come back. The responses are parsed and stored in a format that
+matches the entries in the fingerprint file.
+
+Each of the packets has a different combination of TCP flags sent to
+tickle out an operating system-identifying response from the
+target. For example, the first packet to an open port includes only
+the SYN flag, typically used when opening a TCP connection. The second
+packet includes no flags (a null scan), and the third probe to the
+open port includes SYN, FIN, PUSH, and URGENT (SFPU) flags, an
+unusual, but not illegal, set of TCP flags. RFC 1025 calls this set of
+flags with 1 byte of data a Kamikaze packet. It was used in testing
+TCP/IP stacks.
+
+An open-source intrusion detection system called Snort uses this
+peculiar set of flags to detect nmap operating system scans. Another
+clue for identifying these probes is that the same TCP sequence number
+is used for all seven of these probes.
+
+Besides just sending packets with different TCP flag settings, these
+packets also include several TCP options, something that I had noticed
+previously in network monitor output but not really
+understood. Digging into the RFCs, I found several references to TCP
+options, but the most important for understanding what nmap does is
+RFC 1323 (see Resources). Also, Richard Stevens' book TCP/IP
+Illustrated, Volume I made interpreting the options easy.
+
+First, you can tell that options are present in a TCP header by
+examining the length field. This field normally has a value of 5, with
+a maximum value of 15. If it's greater than 5, some options are
+present at the end of the header. Options begin with a kind field that
+identifies the type of options. Only the No-Operation (NOP, an option
+used for padding) and the End-of-list options consist of a single
+byte. All other options consist of the kind, a length in bytes that
+includes the kind byte, and the actual data.  The NOP aligns the data
+within options into 32-bit words, or to fill out a 32-bit word.  The
+End of list always ends the options.
+
+Fyodor uses three options, plus a NOP for padding and the final end of
+list. The options are Window Scale, Maximum Segment Size, and
+Timestamp. Of these, Window Scale and Timestamp were added to TCP/IP
+in RFC 1323 to support high-speed networks with relatively long
+latency (or, to quote Van Jacobsen, "long, fat networks"). The Maximum
+Segment Size is normally used by the sender to avoid fragmentation. In
+nmap, the order of these options is significant, as the fingerprints
+record the order in which the target of the scan returns the
+options. These options should be sent first in an initial (SYN)
+packet, a rule that nmap ignores in several tests.
+
+Some TCP/IP stacks do not understand any options. Others will respond
+with some or all of the options, or even include additional ones. Nmap
+records these responses, along with other characteristics, such as
+where padding (NOP) is used; whether the Don't Fragment flag is set;
+what the size of the Window value is in the TCP header; and if the
+acknowledgement number is set to zero, incremented, or left unchanged
+from the sequence number sent.
+
+The Window is a flow control mechanism used in TCP connections. By
+sending a Window value, the sender tells the receiver how many bytes
+of data can be sent without receiving an acknowledgement. This keeps
+one system from sending data to an overloaded and slowly responding
+machine. Alternatively, an overloaded machine can also stop the flow
+of data by setting the Window value to zero. Although it may seem
+logical that all systems use the same Window value, the initial Window
+value varies enormously, from zero for some devices to 32,767 for
+Windows NT (Service Pack 3) and just one Linux kernel (2.1.76). In
+cases where several systems do have the same initial Window value,
+nmap uses other characteristics to select the OS type.
+
+Nmap also collects characteristics from a response sent to a closed
+UDP port (the response will be an ICMP Destination Unreachable, type
+Port Unreachable), as the target is supposed to include part of the
+packet that caused the ICMP message. The accuracy of the quoting of
+the packet in the ICMP response varies depending on the target stack,
+and this, too, can be used to identify an operating system.
+
+The final stage uses SYN packets to probe for initial sequence
+numbers. Nmap sends a couple of resets first to the open port, then
+sends six packets with just SYN set (the normal method for opening a
+TCP connection), followed each time with a reset (a TCP header with
+reset and ACK flags set, which aborts the connection). The sequence
+numbers in packets sent increase incrementally by one each time; this
+is abnormal behavior but is characteristic of sequence number
+collectors, such as rbone and the unpublished tool used to take down
+security specialist Tsutomo Shimomura's site on Christmas Day, 1994
+(see "Source Address Spoofing," May 2000).
+
+Nmap collects the initial sequence numbers received from the target
+and looks for a pattern in the way they are incremented. Really old
+Unix systems still use a constant increment, while newer and more
+secure systems use a random increment. Newer Microsoft stacks use a
+time-dependent increment, which might make them vulnerable if they ran
+a Unix service such as rlogind (which is not the case).
+
+NMAP COUNTERMEASURES 
+Nmap's accuracy relies on collecting a lot of
+information from the target's stack. Anything that tampers with this
+information will affect that accuracy. What might tamper with this?
+Firewalls do to a greater or lesser extent. Most stacks permit tuning
+some of the tested parameters, but only a small portion of them.
+
+Packet-filtering firewalls are ineffective. Firewalls that perform
+Network Address Translation (NAT) improve effectiveness by rewriting
+sequence numbers (not all of them do). Application gateways running on
+a firewall prevent nmap from identifying the target, as nmap will be
+probing the firewall's stack instead.
+
+Of course, the best defense is to prevent any scanning from
+penetrating your network in the first place, and promptly detecting
+unauthorized scanning when it takes place within the confines of your
+network. N
+
+Rik Farrow is an independent security consultant. His Web site,
+www.spirit.com, contains security links and information about network
+and computer security courses.  He can be reached at rik@spirit.com.
+
+Resources 
+The home site for Network Map (nmap) is
+www.insecure.org/nmap/, at which nmap author Fyodor has a paper
+describing the techniques he uses for operating system detection. Go
+to www.insecure.org/nmap/nmap-fingerprinting-article.html. Also
+available is the source code for nmap.
+
+A new version of Ofir Arkin's paper on Internet Control Message
+Protocol (ICMP) used in scanning can be found at
+www.sys-security.com/archive/papers/ICMP_Scanning_v2.0.pdf.
+
+RFC 1323, which describes TCP extensions for high performance with two
+of the three TCP options used in operating system detection, is
+available at www.faqs.org/rfcs/rfc1323.html.
+
+You can find Snort, an intrusion detection scanner for low-volume
+networks, at www.snort.org.
+
+The Windows NT version of nmap is available at
+www.eEye.com/html/Databases/Software/nmapnt.html.
+
+Richard Stevens is author of TCP/IP Illustrated, Volume 1 from
+Addison-Wesley; of particular interest are pages 253 to 254.  
+
+Source: Network Magazine
