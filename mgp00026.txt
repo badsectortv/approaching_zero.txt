@@ -1,0 +1,49 @@
+
+FIN Scan of Docsrv
+
+# nmap -sF -T4 docsrv.caldera.com
+Starting nmap 3.76 ( http://www.insecure.org/nmap/ )
+Interesting ports on docsrv.caldera.com (216.250.128.247):
+(The 1624 ports scanned but not shown below are in state: closed)
+PORT      STATE         SERVICE
+7/tcp     open|filtered echo
+9/tcp     open|filtered discard
+11/tcp    open|filtered systat
+13/tcp    open|filtered daytime
+15/tcp    open|filtered netstat
+19/tcp    open|filtered chargen
+21/tcp    open|filtered ftp
+22/tcp    open|filtered ssh
+23/tcp    open|filtered telnet
+25/tcp    open|filtered smtp
+37/tcp    open|filtered time
+79/tcp    open|filtered finger
+80/tcp    open|filtered http
+110/tcp   open|filtered pop3
+111/tcp   open|filtered rpcbind
+135/tcp   open|filtered msrpc
+143/tcp   open|filtered imap
+360/tcp   open|filtered scoi2odialog
+389/tcp   open|filtered ldap
+465/tcp   open|filtered smtps
+507/tcp   open|filtered crs
+512/tcp   open|filtered exec
+513/tcp   open|filtered login
+514/tcp   open|filtered shell
+515/tcp   open|filtered printer
+636/tcp   open|filtered ldapssl
+712/tcp   open|filtered unknown
+955/tcp   open|filtered unknown
+993/tcp   open|filtered imaps
+995/tcp   open|filtered pop3s
+1434/tcp  open|filtered ms-sql-m
+2000/tcp  open|filtered callbook
+2766/tcp  open|filtered listen
+3000/tcp  open|filtered ppp
+3306/tcp  open|filtered mysql
+6112/tcp  open|filtered dtspc
+32770/tcp open|filtered sometimes-rpc3
+32771/tcp open|filtered sometimes-rpc5
+32772/tcp open|filtered sometimes-rpc7
+
+Nmap run completed -- 1 IP address (1 host up) scanned in 7.635 seconds
